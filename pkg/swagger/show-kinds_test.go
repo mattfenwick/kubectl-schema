@@ -16,19 +16,19 @@ func RunExplainGVKTests() {
 
 	Describe("Explain GVK", func() {
 		It("By resource -- no diff", func() {
-			actual := ExplainGvks(ExplainGVKGroupByResource, versions, include, false)
+			actual := ShowKinds(ShowKindsGroupByResource, versions, include, false)
 			Expect(actual).To(Equal(byResourceNoDiff[1:]))
 		})
 		It("By apiversion -- no diff", func() {
-			actual := ExplainGvks(ExplainGVKGroupByApiVersion, versions, include, false)
+			actual := ShowKinds(ShowKindsGroupByApiVersion, versions, include, false)
 			Expect(actual).To(Equal(byApiVersionNoDiff[1:]))
 		})
 		It("By resource -- diff", func() {
-			actual := ExplainGvks(ExplainGVKGroupByResource, versions, include, true)
+			actual := ShowKinds(ShowKindsGroupByResource, versions, include, true)
 			Expect(actual).To(Equal(byResourceWithDiff[1:]))
 		})
 		It("By apiversion -- diff", func() {
-			actual := ExplainGvks(ExplainGVKGroupByApiVersion, versions, include, true)
+			actual := ShowKinds(ShowKindsGroupByApiVersion, versions, include, true)
 			fmt.Printf("actual vs. expected:\n%s\n\n%s\n\n", actual, byApiVersionWithDiff)
 			Expect(actual).To(Equal(byApiVersionWithDiff[1:]))
 		})

@@ -9,25 +9,25 @@ import (
 	"strings"
 )
 
-type ExplainGVKGroupBy string
+type ShowKindsGroupBy string
 
 const (
-	ExplainGVKGroupByResource   = "ExplainGVKGroupByResource"
-	ExplainGVKGroupByApiVersion = "ExplainGVKGroupByApiVersion"
+	ShowKindsGroupByResource   = "ShowKindsGroupByResource"
+	ShowKindsGroupByApiVersion = "ShowKindsGroupByApiVersion"
 )
 
-func (e ExplainGVKGroupBy) Header() string {
-	switch e {
-	case ExplainGVKGroupByResource:
+func (s ShowKindsGroupBy) Header() string {
+	switch s {
+	case ShowKindsGroupByResource:
 		return "Resource"
-	case ExplainGVKGroupByApiVersion:
+	case ShowKindsGroupByApiVersion:
 		return "API version"
 	default:
-		panic(errors.Errorf("invalid groupBy: %s", e))
+		panic(errors.Errorf("invalid groupBy: %s", s))
 	}
 }
 
-func ExplainGvks(groupBy ExplainGVKGroupBy, versions []string, include func(string, string) bool, calculateDiff bool) string {
+func ShowKinds(groupBy ShowKindsGroupBy, versions []string, include func(string, string) bool, calculateDiff bool) string {
 	table := NewPivotTable(groupBy.Header(), versions)
 	for _, version := range versions {
 		kubeVersion := MustVersion(version)
@@ -43,9 +43,9 @@ func ExplainGvks(groupBy ExplainGVKGroupBy, versions []string, include func(stri
 				if include(apiVersion, gvk.Kind) {
 					logrus.Debugf("adding gvk: %s, %s", apiVersion, gvk.Kind)
 					switch groupBy {
-					case ExplainGVKGroupByResource:
+					case ShowKindsGroupByResource:
 						table.Add(gvk.Kind, kubeVersion.ToString(), apiVersion)
-					case ExplainGVKGroupByApiVersion:
+					case ShowKindsGroupByApiVersion:
 						table.Add(apiVersion, kubeVersion.ToString(), gvk.Kind)
 					default:
 						panic(errors.Errorf("invalid groupBy: %s", groupBy))

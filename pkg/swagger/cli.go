@@ -33,7 +33,7 @@ func SetupRootSchemaCommand() *cobra.Command {
 	command.AddCommand(SetupVersionCommand())
 	command.AddCommand(setupExplainResourceCommand())
 	command.AddCommand(setupCompareResourceCommand())
-	command.AddCommand(setupExplainGvkCommand())
+	command.AddCommand(SetupShowKindsCommand())
 
 	return command
 }
@@ -68,36 +68,7 @@ func RunVersionCommand() {
 }
 
 var (
-	//defaultExcludeResources = []string{"WatchEvent", "DeleteOptions"}
-	//defaultIncludeResources = []string{
-	//	"Service",
-	//	"ClusterRole",
-	//	"ClusterRoleBinding",
-	//	"ConfigMap",
-	//	"CronJob",
-	//	"CustomResourceDefinition",
-	//	"Deployment",
-	//	"Ingress",
-	//	"Job",
-	//	"Role",
-	//	"RoleBinding",
-	//	"Secret",
-	//	"ServiceAccount",
-	//	"StatefulSet",
-	//}
-	//
-	//defaultExcludeApiVersions = []string{}
-	//defaultIncludeApiVersions = []string{
-	//	"v1",
-	//	"apps.v1",
-	//	"batch.v1",
-	//}
-
 	defaultKubeVersions = []string{
-		"1.18.20",
-		"1.19.16",
-		"1.20.15",
-		"1.21.14",
 		"1.22.12",
 		"1.23.9",
 		"1.24.3",
@@ -105,7 +76,7 @@ var (
 	}
 )
 
-type ExplainGVKArgs struct {
+type ShowKindsArgs struct {
 	GroupBy            string
 	KubeVersions       []string
 	IncludeApiVersions []string
@@ -117,26 +88,26 @@ type ExplainGVKArgs struct {
 	// TODO add flag to verify parsing?  by serializing/deserializing to check if it matches input?
 }
 
-func (e *ExplainGVKArgs) GetGroupBy() ExplainGVKGroupBy {
-	switch e.GroupBy {
+func (s *ShowKindsArgs) GetGroupBy() ShowKindsGroupBy {
+	switch s.GroupBy {
 	case "resource":
-		return ExplainGVKGroupByResource
+		return ShowKindsGroupByResource
 	case "apiversion", "api-version":
-		return ExplainGVKGroupByApiVersion
+		return ShowKindsGroupByApiVersion
 	default:
-		panic(errors.Errorf("invalid group by value: %s", e.GroupBy))
+		panic(errors.Errorf("invalid group by value: %s", s.GroupBy))
 	}
 }
 
-func setupExplainGvkCommand() *cobra.Command {
-	args := &ExplainGVKArgs{}
+func SetupShowKindsCommand() *cobra.Command {
+	args := &ShowKindsArgs{}
 
 	command := &cobra.Command{
-		Use:   "gvk",
-		Short: "explain gvks from a swagger spec",
+		Use:   "kinds",
+		Short: "show available kinds, by api-version and kubernetes version",
 		Args:  cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, as []string) {
-			RunExplainGvks(args)
+			RunShowKinds(args)
 		},
 	}
 
@@ -160,7 +131,7 @@ func shouldAllow(s string, allows *set.Set[string], forbids *set.Set[string]) bo
 	return (allows.Len() == 0 || allows.Contains(s)) && !forbids.Contains(s)
 }
 
-func RunExplainGvks(args *ExplainGVKArgs) {
+func RunShowKinds(args *ShowKindsArgs) {
 	var include func(apiVersion string, resource string) bool
 	if args.IncludeAll {
 		include = func(apiVersion string, resource string) bool {
@@ -179,7 +150,7 @@ func RunExplainGvks(args *ExplainGVKArgs) {
 		}
 	}
 
-	fmt.Printf("\n%s\n\n", ExplainGvks(args.GetGroupBy(), args.KubeVersions, include, args.Diff))
+	fmt.Printf("\n%s\n\n", ShowKinds(args.GetGroupBy(), args.KubeVersions, include, args.Diff))
 }
 
 type ExplainResourceArgs struct {
