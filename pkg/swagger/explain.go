@@ -6,9 +6,41 @@ import (
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
 	"strings"
 )
+
+type ExplainResourceArgs struct {
+	Format        string
+	GroupVersions []string
+	TypeNames     []string
+	KubeVersions  []string
+	Depth         int
+	Paths         []string
+}
+
+func setupExplainResourceCommand() *cobra.Command {
+	args := &ExplainResourceArgs{}
+
+	command := &cobra.Command{
+		Use:   "explain",
+		Short: "explain types from a swagger spec",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, as []string) {
+			RunExplainResource(args)
+		},
+	}
+
+	command.Flags().StringVar(&args.Format, "format", "condensed", "output format")
+	command.Flags().StringSliceVar(&args.GroupVersions, "group-version", []string{}, "group/versions to look for type under; looks under all if not specified")
+	command.Flags().StringSliceVar(&args.TypeNames, "type", []string{}, "kubernetes types to explain")
+	command.Flags().StringSliceVar(&args.KubeVersions, "version", []string{"1.23.0"}, "kubernetes spec versions")
+	command.Flags().IntVar(&args.Depth, "depth", 0, "number of layers to print; 0 is treated as unlimited")
+	command.Flags().StringSliceVar(&args.Paths, "path", []string{}, "paths to search under, components separated by '.'; if empty, all paths are searched")
+
+	return command
+}
 
 func RunExplainResource(args *ExplainResourceArgs) {
 	allowedGVs := set.NewSet(args.GroupVersions)
