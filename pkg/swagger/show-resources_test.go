@@ -7,28 +7,28 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func RunExplainGVKTests() {
+func RunShowResourcesTests() {
 	versions := []string{"1.18.20", "1.20.15", "1.22.12", "1.24.0", "1.25.0-alpha.3"}
 	resources := set.NewSet([]string{"Ingress", "CronJob", "CustomResourceDefinition"})
 	include := func(apiVersion string, resource string) bool {
 		return resources.Contains(resource)
 	}
 
-	Describe("Explain GVK", func() {
+	Describe("Show resource", func() {
 		It("By resource -- no diff", func() {
-			actual := ShowKinds(ShowKindsGroupByResource, versions, include, false)
+			actual := ShowResources(ShowResourcesGroupByResource, versions, include, false)
 			Expect(actual).To(Equal(byResourceNoDiff[1:]))
 		})
 		It("By apiversion -- no diff", func() {
-			actual := ShowKinds(ShowKindsGroupByApiVersion, versions, include, false)
+			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, false)
 			Expect(actual).To(Equal(byApiVersionNoDiff[1:]))
 		})
 		It("By resource -- diff", func() {
-			actual := ShowKinds(ShowKindsGroupByResource, versions, include, true)
+			actual := ShowResources(ShowResourcesGroupByResource, versions, include, true)
 			Expect(actual).To(Equal(byResourceWithDiff[1:]))
 		})
 		It("By apiversion -- diff", func() {
-			actual := ShowKinds(ShowKindsGroupByApiVersion, versions, include, true)
+			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, true)
 			fmt.Printf("actual vs. expected:\n%s\n\n%s\n\n", actual, byApiVersionWithDiff)
 			Expect(actual).To(Equal(byApiVersionWithDiff[1:]))
 		})

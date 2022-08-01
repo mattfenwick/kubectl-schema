@@ -20,7 +20,7 @@ var (
 	}
 )
 
-type ShowKindsArgs struct {
+type ShowResourcesArgs struct {
 	GroupBy            string
 	KubeVersions       []string
 	IncludeApiVersions []string
@@ -32,26 +32,26 @@ type ShowKindsArgs struct {
 	// TODO add flag to verify parsing?  by serializing/deserializing to check if it matches input?
 }
 
-func (s *ShowKindsArgs) GetGroupBy() ShowKindsGroupBy {
+func (s *ShowResourcesArgs) GetGroupBy() ShowResourcesGroupBy {
 	switch s.GroupBy {
 	case "resource":
-		return ShowKindsGroupByResource
+		return ShowResourcesGroupByResource
 	case "apiversion", "api-version":
-		return ShowKindsGroupByApiVersion
+		return ShowResourcesGroupByApiVersion
 	default:
 		panic(errors.Errorf("invalid group by value: %s", s.GroupBy))
 	}
 }
 
-func SetupShowKindsCommand() *cobra.Command {
-	args := &ShowKindsArgs{}
+func SetupShowResourcesCommand() *cobra.Command {
+	args := &ShowResourcesArgs{}
 
 	command := &cobra.Command{
-		Use:   "kinds",
-		Short: "show available kinds, by api-version and kubernetes version",
+		Use:   "resources",
+		Short: "show available resources, by api-version and kubernetes version",
 		Args:  cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, as []string) {
-			RunShowKinds(args)
+			RunShowResources(args)
 		},
 	}
 
@@ -75,7 +75,7 @@ func shouldAllow(s string, allows *set.Set[string], forbids *set.Set[string]) bo
 	return (allows.Len() == 0 || allows.Contains(s)) && !forbids.Contains(s)
 }
 
-func RunShowKinds(args *ShowKindsArgs) {
+func RunShowResources(args *ShowResourcesArgs) {
 	var include func(apiVersion string, resource string) bool
 	if args.IncludeAll {
 		include = func(apiVersion string, resource string) bool {
@@ -94,28 +94,28 @@ func RunShowKinds(args *ShowKindsArgs) {
 		}
 	}
 
-	fmt.Printf("\n%s\n\n", ShowKinds(args.GetGroupBy(), args.KubeVersions, include, args.Diff))
+	fmt.Printf("\n%s\n\n", ShowResources(args.GetGroupBy(), args.KubeVersions, include, args.Diff))
 }
 
-type ShowKindsGroupBy string
+type ShowResourcesGroupBy string
 
 const (
-	ShowKindsGroupByResource   = "ShowKindsGroupByResource"
-	ShowKindsGroupByApiVersion = "ShowKindsGroupByApiVersion"
+	ShowResourcesGroupByResource   ShowResourcesGroupBy = "ShowResourcesGroupByResource"
+	ShowResourcesGroupByApiVersion ShowResourcesGroupBy = "ShowResourcesGroupByApiVersion"
 )
 
-func (s ShowKindsGroupBy) Header() string {
+func (s ShowResourcesGroupBy) Header() string {
 	switch s {
-	case ShowKindsGroupByResource:
+	case ShowResourcesGroupByResource:
 		return "Resource"
-	case ShowKindsGroupByApiVersion:
+	case ShowResourcesGroupByApiVersion:
 		return "API version"
 	default:
 		panic(errors.Errorf("invalid groupBy: %s", s))
 	}
 }
 
-func ShowKinds(groupBy ShowKindsGroupBy, versions []string, include func(string, string) bool, calculateDiff bool) string {
+func ShowResources(groupBy ShowResourcesGroupBy, versions []string, include func(string, string) bool, calculateDiff bool) string {
 	table := NewPivotTable(groupBy.Header(), versions)
 	for _, version := range versions {
 		kubeVersion := MustVersion(version)
@@ -131,9 +131,9 @@ func ShowKinds(groupBy ShowKindsGroupBy, versions []string, include func(string,
 				if include(apiVersion, gvk.Kind) {
 					logrus.Debugf("adding gvk: %s, %s", apiVersion, gvk.Kind)
 					switch groupBy {
-					case ShowKindsGroupByResource:
+					case ShowResourcesGroupByResource:
 						table.Add(gvk.Kind, kubeVersion.ToString(), apiVersion)
-					case ShowKindsGroupByApiVersion:
+					case ShowResourcesGroupByApiVersion:
 						table.Add(apiVersion, kubeVersion.ToString(), gvk.Kind)
 					default:
 						panic(errors.Errorf("invalid groupBy: %s", groupBy))

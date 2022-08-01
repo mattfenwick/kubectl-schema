@@ -11,30 +11,30 @@ import (
 	"strings"
 )
 
-type ExplainResourceArgs struct {
-	Format        string
-	GroupVersions []string
-	TypeNames     []string
-	KubeVersions  []string
-	Depth         int
-	Paths         []string
+type ExplainArgs struct {
+	Format       string
+	ApiVersions  []string
+	Resources    []string
+	KubeVersions []string
+	Depth        int
+	Paths        []string
 }
 
-func setupExplainResourceCommand() *cobra.Command {
-	args := &ExplainResourceArgs{}
+func SetupExplainCommand() *cobra.Command {
+	args := &ExplainArgs{}
 
 	command := &cobra.Command{
 		Use:   "explain",
-		Short: "explain types from a swagger spec",
+		Short: "explain resources from a swagger spec",
 		Args:  cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, as []string) {
-			RunExplainResource(args)
+			RunExplain(args)
 		},
 	}
 
-	command.Flags().StringVar(&args.Format, "format", "condensed", "output format")
-	command.Flags().StringSliceVar(&args.GroupVersions, "group-version", []string{}, "group/versions to look for type under; looks under all if not specified")
-	command.Flags().StringSliceVar(&args.TypeNames, "type", []string{}, "kubernetes types to explain")
+	command.Flags().StringVar(&args.Format, "format", "condensed", "output format; possible values: table, condensed")
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to look for resource under; looks under all if not specified")
+	command.Flags().StringSliceVar(&args.Resources, "type", []string{}, "kubernetes resources to explain")
 	command.Flags().StringSliceVar(&args.KubeVersions, "version", []string{"1.23.0"}, "kubernetes spec versions")
 	command.Flags().IntVar(&args.Depth, "depth", 0, "number of layers to print; 0 is treated as unlimited")
 	command.Flags().StringSliceVar(&args.Paths, "path", []string{}, "paths to search under, components separated by '.'; if empty, all paths are searched")
@@ -42,14 +42,14 @@ func setupExplainResourceCommand() *cobra.Command {
 	return command
 }
 
-func RunExplainResource(args *ExplainResourceArgs) {
-	allowedGVs := set.NewSet(args.GroupVersions)
-	allowGV := func(gv string) bool {
-		return len(args.GroupVersions) == 0 || allowedGVs.Contains(gv)
+func RunExplain(args *ExplainArgs) {
+	allowedApiVersions := set.NewSet(args.ApiVersions)
+	allowApiVersion := func(apiVersion string) bool {
+		return len(args.ApiVersions) == 0 || allowedApiVersions.Contains(apiVersion)
 	}
-	allowedResources := set.NewSet(args.TypeNames)
+	allowedResources := set.NewSet(args.Resources)
 	allowResource := func(name string) bool {
-		return len(args.TypeNames) == 0 || allowedResources.Contains(name)
+		return len(args.Resources) == 0 || allowedResources.Contains(name)
 	}
 	allowDepth := func(prefix int, depth int) bool {
 		if args.Depth == 0 {
@@ -76,29 +76,29 @@ func RunExplainResource(args *ExplainResourceArgs) {
 	for _, kubeVersion := range args.KubeVersions {
 		fmt.Printf("%s\n", kubeVersion)
 		spec := MustReadSwaggerSpecFromGithub(MustVersion(kubeVersion))
-		resolvedGVKs := spec.ResolveStructure()
+		typesByKindByApiVersion := spec.ResolveStructure()
 
-		for _, name := range slice.Sort(maps.Keys(resolvedGVKs)) {
-			if !allowResource(name) {
+		for _, resourceName := range slice.Sort(maps.Keys(typesByKindByApiVersion)) {
+			if !allowResource(resourceName) {
 				continue
 			}
-			gvks := map[string]*ResolvedType{}
-			for gv, kind := range resolvedGVKs[name] {
-				if allowGV(gv) {
-					gvks[gv] = kind
+			typesByApiVersion := map[string]*ResolvedType{}
+			for apiVersion, resolvedType := range typesByKindByApiVersion[resourceName] {
+				if allowApiVersion(apiVersion) {
+					typesByApiVersion[apiVersion] = resolvedType
 				}
 			}
 
 			switch args.Format {
 			case "table":
-				for gv, kind := range gvks {
-					fmt.Printf("%s %s:\n", gv, name)
-					fmt.Printf("%s\n\n", TableResource(kind, allowPath))
+				for apiVersion, resolvedType := range typesByApiVersion {
+					fmt.Printf("%s %s:\n", apiVersion, resourceName)
+					fmt.Printf("%s\n\n", TableResource(resolvedType, allowPath))
 				}
 			case "condensed":
-				fmt.Printf("%s:\n", name)
-				for gv, kind := range gvks {
-					fmt.Printf("%s\n\n", CondensedResource(gv, kind, allowPath))
+				fmt.Printf("%s:\n", resourceName)
+				for apiVersion, resolvedType := range typesByApiVersion {
+					fmt.Printf("%s\n\n", CondensedResource(apiVersion, resolvedType, allowPath))
 				}
 			default:
 				panic(errors.Errorf("invalid output format: %s", args.Format))
@@ -107,7 +107,7 @@ func RunExplainResource(args *ExplainResourceArgs) {
 	}
 }
 
-func TableResource(kind *ResolvedType, allowPath func([]string) bool) string {
+func TableResource(resolvedType *ResolvedType, allowPath func([]string) bool) string {
 	tableString := &strings.Builder{}
 	table := tablewriter.NewWriter(tableString)
 	table.SetAutoWrapText(false)
@@ -115,7 +115,7 @@ func TableResource(kind *ResolvedType, allowPath func([]string) bool) string {
 	table.SetAutoMergeCells(true)
 	table.SetColMinWidth(1, 100)
 	table.SetHeader([]string{"Type", "Field"})
-	for _, pair := range kind.Paths([]string{}) {
+	for _, pair := range resolvedType.Paths([]string{}) {
 		path, vType := pair.Fst, pair.Snd
 		if allowPath(path) {
 			table.Append([]string{strings.Join(path, "."), vType})
@@ -134,9 +134,9 @@ func IsPrefixOf[A comparable](xs []A, ys []A) bool {
 	return true
 }
 
-func CondensedResource(gv string, kind *ResolvedType, allowPath func([]string) bool) string {
-	lines := []string{gv + ":"}
-	for _, pair := range kind.Paths([]string{}) {
+func CondensedResource(apiVersion string, resolvedType *ResolvedType, allowPath func([]string) bool) string {
+	lines := []string{apiVersion + ":"}
+	for _, pair := range resolvedType.Paths([]string{}) {
 		path, vType := pair.Fst, pair.Snd
 		if len(path) > 0 && allowPath(path) {
 			prefix := strings.Repeat("  ", len(path)-1)

@@ -9,7 +9,7 @@ import (
 func TestMatcher(t *testing.T) {
 	gomega.RegisterFailHandler(Fail)
 
-	RunExplainGVKTests()
+	RunShowResourcesTests()
 
 	RunSpecs(t, "swagger suite")
 }
