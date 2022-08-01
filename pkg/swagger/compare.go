@@ -62,8 +62,8 @@ func RunCompareResource(args *CompareResourceArgs) {
 		}
 		resolved1 := kinds1[typeName]
 		resolved2 := kinds2[typeName]
-		logrus.Debugf("group/versions for kube %s: %+v", args.KubeVersions[0], maps.Keys(resolved1))
-		logrus.Debugf("group/versions for kube %s: %+v", args.KubeVersions[1], maps.Keys(resolved2))
+		logrus.Debugf("api versions for kube %s: %+v", args.KubeVersions[0], maps.Keys(resolved1))
+		logrus.Debugf("api versions for kube %s: %+v", args.KubeVersions[1], maps.Keys(resolved2))
 
 		for _, apiVersion1 := range maps.Keys(resolved1) {
 			if !allowApiVersion(apiVersion1) {
@@ -76,8 +76,8 @@ func RunCompareResource(args *CompareResourceArgs) {
 				}
 				type2 := resolved2[apiVersion2]
 				fmt.Printf("comparing %s: %s@%s vs. %s@%s\n", typeName, args.KubeVersions[0], apiVersion1, args.KubeVersions[1], apiVersion2)
-				for _, e := range CompareResolvedResources(type1, type2).Elements {
-					fmt.Printf("  %-20s    %+v\n", e.Type.Short(), strings.Join(e.Path, "."))
+				for _, e := range CompareResolvedResources(type1, type2).Changes {
+					fmt.Printf("  %-20s    %+v\n", e.Kind.Short(), strings.Join(e.Path, "."))
 				}
 				fmt.Println()
 			}

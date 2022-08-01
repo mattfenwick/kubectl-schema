@@ -2,7 +2,7 @@ package apiversions
 
 import (
 	"github.com/mattfenwick/collections/pkg/slice"
-	"github.com/mattfenwick/kubectl-schema/pkg/utils"
+	"github.com/mattfenwick/kubectl-schema/pkg/diff"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -12,20 +12,8 @@ import (
 	"strings"
 )
 
-type MapDiff struct {
-	Added   []string
-	Removed []string
-	Same    []string
-}
-
-func (m *MapDiff) Sort() {
-	sort.Strings(m.Added)
-	sort.Strings(m.Removed)
-	sort.Strings(m.Same)
-}
-
 type ResourceDiff struct {
-	Changed map[string]*MapDiff
+	Changed map[string]*diff.MapDiff
 }
 
 func (r *ResourceDiff) SortedChangedKeys() []string {
@@ -97,19 +85,19 @@ func NewResourcesTable(version string, headers []string, rows [][]string) (*Reso
 }
 
 func (r *ResourcesTable) Diff(other *ResourcesTable) *ResourceDiff {
-	changed := map[string]*MapDiff{}
+	changed := map[string]*diff.MapDiff{}
 
 	for ak, av := range r.Kinds {
 		bv, ok := other.Kinds[ak]
 		if ok {
-			changed[ak] = SliceDiff(av, bv)
+			changed[ak] = diff.SliceDiff(av, bv)
 		} else {
-			changed[ak] = &MapDiff{Removed: av}
+			changed[ak] = &diff.MapDiff{Removed: av}
 		}
 	}
 	for bk, bv := range other.Kinds {
 		if _, ok := r.Kinds[bk]; !ok {
-			changed[bk] = &MapDiff{Added: bv}
+			changed[bk] = &diff.MapDiff{Added: bv}
 		}
 	}
 	return &ResourceDiff{
@@ -127,26 +115,4 @@ func (r *ResourcesTable) KindResourcesTable() string {
 	table.AppendBulk(r.Rows)
 	table.Render()
 	return tableString.String()
-}
-
-func SliceDiff(as []string, bs []string) *MapDiff {
-	aSet, bSet := utils.Set(as), utils.Set(bs)
-	var added, removed, same []string
-	for key := range aSet {
-		if bSet[key] {
-			same = append(same, key)
-		} else {
-			removed = append(removed, key)
-		}
-	}
-	for key := range bSet {
-		if !aSet[key] {
-			added = append(added, key)
-		}
-	}
-	return &MapDiff{
-		Added:   added,
-		Removed: removed,
-		Same:    same,
-	}
 }

@@ -108,7 +108,7 @@ func TableResource(resolvedType *ResolvedType, allowPath func([]string) bool) st
 	table.SetRowLine(true)
 	table.SetAutoMergeCells(true)
 	table.SetColMinWidth(1, 100)
-	table.SetHeader([]string{"Type", "Field"})
+	table.SetHeader([]string{"Kind", "Field"})
 	for _, pair := range resolvedType.Paths([]string{}) {
 		path, vType := pair.Fst, pair.Snd
 		if allowPath(path) {

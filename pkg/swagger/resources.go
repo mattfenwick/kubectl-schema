@@ -3,7 +3,7 @@ package swagger
 import (
 	"fmt"
 	"github.com/mattfenwick/collections/pkg/slice"
-	"github.com/mattfenwick/kubectl-schema/pkg/swagger/apiversions"
+	"github.com/mattfenwick/kubectl-schema/pkg/diff"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -123,15 +123,15 @@ func ShowResources(groupBy ShowResourcesGroupBy, versions []string, include func
 			row := []string{rowKey, formatCell(prev)}
 
 			for _, curr := range values[1:] {
-				diff := apiversions.SliceDiff(prev, curr)
-				diff.Sort()
+				cellDiff := diff.SliceDiff(prev, curr)
+				cellDiff.Sort()
 
 				var add, remove string
-				if len(diff.Added) > 0 {
-					add = fmt.Sprintf("add:\n  %s\n\n", strings.Join(slice.Sort(diff.Added), "\n  "))
+				if len(cellDiff.Added) > 0 {
+					add = fmt.Sprintf("add:\n  %s\n\n", strings.Join(slice.Sort(cellDiff.Added), "\n  "))
 				}
-				if len(diff.Removed) > 0 {
-					add = fmt.Sprintf("remove:\n  %s\n\n", strings.Join(slice.Sort(diff.Removed), "\n  "))
+				if len(cellDiff.Removed) > 0 {
+					add = fmt.Sprintf("remove:\n  %s\n\n", strings.Join(slice.Sort(cellDiff.Removed), "\n  "))
 				}
 				row = append(row, fmt.Sprintf("%s%s", add, remove))
 
