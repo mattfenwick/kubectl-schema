@@ -1,9 +1,12 @@
 package swagger
 
 import (
+	"fmt"
+	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/maps"
 )
 
 func CompareResolvedResources(a *ResolvedType, b *ResolvedType) *utils.JsonDocumentDiffs {
@@ -32,50 +35,45 @@ func CompareResolvedResourcesHelper(a *ResolvedType, b *ResolvedType, pathContex
 				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: a, New: b, Path: path})
 			}
 		} else if a.Array != nil {
-			/* TODO
-			switch bVal := b.(type) {
-			case *Array:
-				CompareResolvedResourcesHelper(aVal.ElementType, bVal.ElementType, append(path, "[]"), diffs)
-			default:
-				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: aVal, New: bVal, Path: path})
+			if b.Array != nil {
+				CompareResolvedResourcesHelper(a.Array, b.Array, append(path, "[]"), diffs)
+			} else {
+				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: a, New: b, Path: path})
 			}
-			*/
 		} else if a.Object != nil {
-			/* TODO
-			switch bVal := b.(type) {
-			case *Object:
-				for _, k := range slice.Sort(maps.Keys(aVal.Fields)) {
-					CompareResolvedResourcesHelper(aVal.Fields[k], bVal.Fields[k], append(path, fmt.Sprintf(`%s`, k)), diffs)
+			if b.Object != nil {
+				for _, k := range slice.Sort(maps.Keys(a.Object.Properties)) {
+					CompareResolvedResourcesHelper(a.Object.Properties[k], b.Object.Properties[k], append(path, fmt.Sprintf(`%s`, k)), diffs)
 				}
-				for _, k := range slice.Sort(maps.Keys(bVal.Fields)) {
-					if _, ok := aVal.Fields[k]; !ok {
-						diffs.Add(&utils.JDiff{Type: utils.DiffTypeAdd, New: bVal.Fields[k], Path: append(path, fmt.Sprintf(`%s`, k))})
+				for _, k := range slice.Sort(maps.Keys(b.Object.Properties)) {
+					if _, ok := a.Object.Properties[k]; !ok {
+						diffs.Add(&utils.JDiff{Type: utils.DiffTypeAdd, New: b.Object.Properties[k], Path: append(path, fmt.Sprintf(`%s`, k))})
 					}
 				}
-				// compare 'required' fields:
-				minLength := len(aVal.Required)
-				if len(bVal.Required) < minLength {
-					minLength = len(bVal.Required)
-				}
-				for i, aSub := range aVal.Required {
-					newPath := append(utils.CopySlice(path), "required", fmt.Sprintf("%d", i))
-					if i >= len(aVal.Required) {
-						diffs.Add(&utils.JDiff{Type: utils.DiffTypeAdd, New: bVal.Required[i], Path: newPath})
-					} else if i >= len(bVal.Required) {
-						diffs.Add(&utils.JDiff{Type: utils.DiffTypeRemove, Old: aSub, Path: newPath})
-					} else if aSub != bVal.Required[i] {
-						diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: aSub, New: bVal.Required[i], Path: newPath})
-					}
-				}
-			default:
-				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: aVal, New: bVal, Path: path})
+				// TODO
+				//   compare 'required' fields:
+				//minLength := len(aVal.Required)
+				//if len(bVal.Required) < minLength {
+				//	minLength = len(bVal.Required)
+				//}
+				//for i, aSub := range aVal.Required {
+				//	newPath := append(utils.CopySlice(path), "required", fmt.Sprintf("%d", i))
+				//	if i >= len(aVal.Required) {
+				//		diffs.Add(&utils.JDiff{Type: utils.DiffTypeAdd, New: bVal.Required[i], Path: newPath})
+				//	} else if i >= len(bVal.Required) {
+				//		diffs.Add(&utils.JDiff{Type: utils.DiffTypeRemove, Old: aSub, Path: newPath})
+				//	} else if aSub != bVal.Required[i] {
+				//		diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: aSub, New: bVal.Required[i], Path: newPath})
+				//	}
+			} else {
+				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: a, New: b, Path: path})
 			}
-			*/
 		} else if a.Circular != "" {
 			if a.Circular != b.Circular {
 				diffs.Add(&utils.JDiff{Type: utils.DiffTypeChange, Old: a, New: b, Path: path})
 			}
+		} else {
+			panic(errors.Errorf("invalid ResolvedType value: %+v", a))
 		}
-		panic(errors.Errorf("invalid ResolvedType value: %+v", a))
 	}
 }

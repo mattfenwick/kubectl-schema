@@ -110,15 +110,15 @@ func (s *KubeSpec) Visit(visit func(path Path, resolved *ResolvedType, circular 
 		resolved := s.VisitSpecType(resolvedTypes, []SpecPath{{FieldAccess: defName}}, def, visit)
 		resolvedTypes[defName] = resolved
 	}
-	gvks := map[string]map[string]*ResolvedType{}
+	byKindByAPIVersion := map[string]map[string]*ResolvedType{}
 	for gvkString, resolved := range resolvedTypes {
 		gvk := ParseGVK(gvkString)
-		if _, ok := gvks[gvk.Kind]; !ok {
-			gvks[gvk.Kind] = map[string]*ResolvedType{}
+		if _, ok := byKindByAPIVersion[gvk.Kind]; !ok {
+			byKindByAPIVersion[gvk.Kind] = map[string]*ResolvedType{}
 		}
-		gvks[gvk.Kind][gvk.GroupVersion()] = resolved
+		byKindByAPIVersion[gvk.Kind][gvk.GroupVersion()] = resolved
 	}
-	return resolvedTypes, gvks
+	return resolvedTypes, byKindByAPIVersion
 }
 
 type SpecPath struct {
@@ -153,14 +153,14 @@ func (p Path) ToStringPieces() []string {
 }
 
 func (s *KubeSpec) ResolveStructure() map[string]map[string]*ResolvedType {
-	_, gvks := s.Visit(func(path Path, resolved *ResolvedType, circular string) {
+	_, byKindByAPIVersion := s.Visit(func(path Path, resolved *ResolvedType, circular string) {
 		if circular == "" {
 			logrus.Debugf("%+v -- %+v\n", path.ToStringPieces(), resolved)
 		} else {
 			logrus.Debugf("%+v\n  CIRCULAR %s\n", path.ToStringPieces(), circular)
 		}
 	})
-	return gvks
+	return byKindByAPIVersion
 }
 
 //func (s *KubeSpec) ResolveGVKs() {
