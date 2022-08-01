@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"fmt"
-	"github.com/mattfenwick/collections/pkg/set"
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/mattfenwick/kubectl-schema/pkg/swagger/apiversions"
 	"github.com/pkg/errors"
@@ -21,14 +20,11 @@ var (
 )
 
 type ShowResourcesArgs struct {
-	GroupBy            string
-	KubeVersions       []string
-	IncludeApiVersions []string
-	ExcludeApiVersions []string
-	IncludeResources   []string
-	ExcludeResources   []string
-	IncludeAll         bool
-	Diff               bool
+	GroupBy      string
+	KubeVersions []string
+	ApiVersions  []string
+	Resources    []string
+	Diff         bool
 	// TODO add flag to verify parsing?  by serializing/deserializing to check if it matches input?
 }
 
@@ -57,44 +53,17 @@ func SetupShowResourcesCommand() *cobra.Command {
 
 	command.Flags().BoolVar(&args.Diff, "diff", false, "if true, calculate a diff from kube version to kube version.  if true, simply print resources")
 
-	command.Flags().BoolVar(&args.IncludeAll, "include-all", false, "if true, includes all apiversions and resources regardless of includes/excludes.  This is useful for debugging")
-
 	command.Flags().StringVar(&args.GroupBy, "group-by", "resource", "what to group by: valid values are 'resource' and 'api-version'")
 	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", defaultKubeVersions, "kube versions to explain")
 
-	command.Flags().StringSliceVar(&args.ExcludeResources, "resource-exclude", []string{}, "resources to exclude")
-	command.Flags().StringSliceVar(&args.IncludeResources, "resource", []string{}, "resources to include")
-
-	command.Flags().StringSliceVar(&args.ExcludeApiVersions, "apiversion-exclude", []string{}, "api versions to exclude")
-	command.Flags().StringSliceVar(&args.IncludeApiVersions, "apiversion", []string{}, "api versions to include")
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "resources to include; if empty, include all")
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to include; if empty, include all")
 
 	return command
 }
 
-func shouldAllow(s string, allows *set.Set[string], forbids *set.Set[string]) bool {
-	return (allows.Len() == 0 || allows.Contains(s)) && !forbids.Contains(s)
-}
-
 func RunShowResources(args *ShowResourcesArgs) {
-	var include func(apiVersion string, resource string) bool
-	if args.IncludeAll {
-		include = func(apiVersion string, resource string) bool {
-			return true
-		}
-	} else {
-		includeResources := set.NewSet(args.IncludeResources)
-		excludeResources := set.NewSet(args.ExcludeResources)
-		includeApiVersions := set.NewSet(args.IncludeApiVersions)
-		excludeApiVersions := set.NewSet(args.ExcludeApiVersions)
-
-		include = func(apiVersion string, resource string) bool {
-			includeApiVersion := shouldAllow(apiVersion, includeApiVersions, excludeApiVersions)
-			includeResource := shouldAllow(resource, includeResources, excludeResources)
-			return includeApiVersion && includeResource
-		}
-	}
-
-	fmt.Printf("\n%s\n\n", ShowResources(args.GetGroupBy(), args.KubeVersions, include, args.Diff))
+	fmt.Printf("\n%s\n\n", ShowResources(args.GetGroupBy(), args.KubeVersions, apiVersionAndResourceAllower(args.ApiVersions, args.Resources), args.Diff))
 }
 
 type ShowResourcesGroupBy string

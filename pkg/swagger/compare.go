@@ -12,9 +12,9 @@ import (
 )
 
 type CompareResourceArgs struct {
-	Versions []string
-	//GroupVersions []string // TODO ?
-	TypeNames []string
+	KubeVersions []string
+	ApiVersions  []string
+	Resources    []string
 }
 
 func setupCompareResourceCommand() *cobra.Command {
@@ -29,28 +29,25 @@ func setupCompareResourceCommand() *cobra.Command {
 		},
 	}
 
-	//command.Flags().StringSliceVar(&args.GroupVersions, "group-version", []string{}, "group/versions to look for type under; looks under all if not specified")
-	//utils.DoOrDie(command.MarkFlagRequired("group-version"))
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to use; if empty, uses all")
 
-	command.Flags().StringSliceVar(&args.Versions, "version", []string{"1.18.19", "1.23.0"}, "kubernetes versions")
-	command.Flags().StringSliceVar(&args.TypeNames, "type", []string{"Pod"}, "types to compare")
+	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", []string{"1.18.19", "1.23.0"}, "kubernetes versions")
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{"Pod"}, "resources to include; if empty, includes all")
 
 	return command
 }
 
 func RunCompareResource(args *CompareResourceArgs) {
-	if len(args.Versions) != 2 {
-		panic(errors.Errorf("expected 2 kube versions, found %+v", args.Versions))
+	if len(args.KubeVersions) != 2 {
+		panic(errors.Errorf("expected 2 kube versions, found %+v", args.KubeVersions))
 	}
 
-	allowedResources := set.NewSet(args.TypeNames)
-	allowResource := func(name string) bool {
-		return len(args.TypeNames) == 0 || allowedResources.Contains(name)
-	}
+	allowResource := allower(args.Resources)
+	allowApiVersion := allower(args.ApiVersions)
 
-	spec1 := MustReadSwaggerSpecFromGithub(MustVersion(args.Versions[0]))
+	spec1 := MustReadSwaggerSpecFromGithub(MustVersion(args.KubeVersions[0]))
 	kinds1 := spec1.ResolveStructure()
-	spec2 := MustReadSwaggerSpecFromGithub(MustVersion(args.Versions[1]))
+	spec2 := MustReadSwaggerSpecFromGithub(MustVersion(args.KubeVersions[1]))
 	kinds2 := spec2.ResolveStructure()
 
 	typeNames := set.NewSet(maps.Keys(kinds1))
@@ -65,23 +62,25 @@ func RunCompareResource(args *CompareResourceArgs) {
 		}
 		resolved1 := kinds1[typeName]
 		resolved2 := kinds2[typeName]
-		logrus.Debugf("group/versions for kube %s: %+v", args.Versions[0], maps.Keys(resolved1))
-		logrus.Debugf("group/versions for kube %s: %+v", args.Versions[1], maps.Keys(resolved2))
+		logrus.Debugf("group/versions for kube %s: %+v", args.KubeVersions[0], maps.Keys(resolved1))
+		logrus.Debugf("group/versions for kube %s: %+v", args.KubeVersions[1], maps.Keys(resolved2))
 
-		CompareSingleResource(typeName, resolved1, resolved2)
-	}
-}
-
-func CompareSingleResource(typeName string, resolved1, resolved2 map[string]*ResolvedType) {
-	for _, groupName1 := range maps.Keys(resolved1) {
-		type1 := resolved1[groupName1]
-		for _, groupName2 := range maps.Keys(resolved2) {
-			type2 := resolved2[groupName2]
-			//fmt.Printf("comparing %s: %s@%s vs. %s@%s\n", typeName, args.Versions[0], groupName1, args.Versions[1], groupName2)
-			for _, e := range CompareResolvedResources(type1, type2).Elements {
-				fmt.Printf("  %-20s    %+v\n", e.Type.Short(), strings.Join(e.Path, "."))
+		for _, apiVersion1 := range maps.Keys(resolved1) {
+			if !allowApiVersion(apiVersion1) {
+				continue
 			}
-			fmt.Println()
+			type1 := resolved1[apiVersion1]
+			for _, apiVersion2 := range maps.Keys(resolved2) {
+				if !allowApiVersion(apiVersion2) {
+					continue
+				}
+				type2 := resolved2[apiVersion2]
+				fmt.Printf("comparing %s: %s@%s vs. %s@%s\n", typeName, args.KubeVersions[0], apiVersion1, args.KubeVersions[1], apiVersion2)
+				for _, e := range CompareResolvedResources(type1, type2).Elements {
+					fmt.Printf("  %-20s    %+v\n", e.Type.Short(), strings.Join(e.Path, "."))
+				}
+				fmt.Println()
+			}
 		}
 	}
 }

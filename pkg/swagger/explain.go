@@ -2,7 +2,6 @@ package swagger
 
 import (
 	"fmt"
-	"github.com/mattfenwick/collections/pkg/set"
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
@@ -34,8 +33,8 @@ func SetupExplainCommand() *cobra.Command {
 
 	command.Flags().StringVar(&args.Format, "format", "condensed", "output format; possible values: table, condensed")
 	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to look for resource under; looks under all if not specified")
-	command.Flags().StringSliceVar(&args.Resources, "type", []string{}, "kubernetes resources to explain")
-	command.Flags().StringSliceVar(&args.KubeVersions, "version", []string{"1.23.0"}, "kubernetes spec versions")
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "kubernetes resources to explain")
+	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", []string{"1.23.0"}, "kubernetes spec versions")
 	command.Flags().IntVar(&args.Depth, "depth", 0, "number of layers to print; 0 is treated as unlimited")
 	command.Flags().StringSliceVar(&args.Paths, "path", []string{}, "paths to search under, components separated by '.'; if empty, all paths are searched")
 
@@ -43,14 +42,9 @@ func SetupExplainCommand() *cobra.Command {
 }
 
 func RunExplain(args *ExplainArgs) {
-	allowedApiVersions := set.NewSet(args.ApiVersions)
-	allowApiVersion := func(apiVersion string) bool {
-		return len(args.ApiVersions) == 0 || allowedApiVersions.Contains(apiVersion)
-	}
-	allowedResources := set.NewSet(args.Resources)
-	allowResource := func(name string) bool {
-		return len(args.Resources) == 0 || allowedResources.Contains(name)
-	}
+	allowApiVersion := allower(args.ApiVersions)
+	allowResource := allower(args.Resources)
+
 	allowDepth := func(prefix int, depth int) bool {
 		if args.Depth == 0 {
 			// always allow if maxDepth is unset
