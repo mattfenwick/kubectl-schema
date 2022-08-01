@@ -17,7 +17,7 @@ builds:
     env:
       - CGO_ENABLED=0
       - GO111MODULE=on
-    main: cmd/plugin/main.go
+    main: cmd/schema/main.go
     ldflags: -s -w
       -X github.com/mattfenwick/schema/pkg/version.version=
 archives:
