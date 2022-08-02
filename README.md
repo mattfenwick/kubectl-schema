@@ -16,11 +16,14 @@ This is a multidimensional calculation, across:
 
 ### Golang binary
 
-TODO
+Download the latest binary for your platform from https://github.com/mattfenwick/kubectl-schema/releases .
 
 ### Kubectl plugin
 
-TODO
+After downloading a `kubectl-schema` binary, place it somewhere in your `$PATH`.
+It will now be usable as `kubectl schema`.
+
+See [the kubectl docs](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/) for more information.
 
 ## Examples
 
@@ -159,7 +162,109 @@ kubectl schema resources \
 
 ### Explain
 
+#### Use a path to focus results
+
+```bash
+kubectl schema explain \
+  --kube-version 1.24.0 \
+  --resource Ingress \
+  --format table \
+  --path spec.tls,status
+
+1.24.0
+io.k8s.api.networking.v1 Ingress:
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+|                       PATH                       |                                                 TYPE                                                 |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| spec.tls                                         | array                                                                                                |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| spec.tls.[]                                      | object                                                                                               |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| spec.tls.[].hosts                                | array                                                                                                |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| spec.tls.[].hosts.[]                             | string                                                                                               |
++--------------------------------------------------+                                                                                                      +
+| spec.tls.[].secretName                           |                                                                                                      |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status                                           | object                                                                                               |
++--------------------------------------------------+                                                                                                      +
+| status.loadBalancer                              |                                                                                                      |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress                      | array                                                                                                |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[]                   | object                                                                                               |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].hostname          | string                                                                                               |
++--------------------------------------------------+                                                                                                      +
+| status.loadBalancer.ingress.[].ip                |                                                                                                      |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].ports             | array                                                                                                |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].ports.[]          | object                                                                                               |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].ports.[].error    | string                                                                                               |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].ports.[].port     | integer                                                                                              |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+| status.loadBalancer.ingress.[].ports.[].protocol | string                                                                                               |
++--------------------------------------------------+------------------------------------------------------------------------------------------------------+
+```
+
+#### Use a `--depth` to limit results
+
+```bash
+kubectl schema explain \
+  --kube-version 1.24.0 \
+  --resource Ingress \
+  --format table \
+  --depth 1              
+
+1.24.0
+io.k8s.api.networking.v1 Ingress:
++------------+------------------------------------------------------------------------------------------------------+
+|    PATH    |                                                 TYPE                                                 |
++------------+------------------------------------------------------------------------------------------------------+
+|            | object                                                                                               |
++------------+------------------------------------------------------------------------------------------------------+
+| apiVersion | string                                                                                               |
++------------+                                                                                                      +
+| kind       |                                                                                                      |
++------------+------------------------------------------------------------------------------------------------------+
+| metadata   | object                                                                                               |
++------------+                                                                                                      +
+| spec       |                                                                                                      |
++------------+                                                                                                      +
+| status     |                                                                                                      |
++------------+------------------------------------------------------------------------------------------------------+
+```
+
 ### Compare
+
+Compare the schema for a type between multiple kubernetes versions.
+
+```bash
+kubectl schema compare \
+  --kube-version 1.18.0,1.24.2 \
+  --resource Ingress      
+
+comparing Ingress: 1.18.0@io.k8s.api.extensions.v1beta1 vs. 1.24.2@io.k8s.api.networking.v1
+  +                       metadata.managedFields.[].subresource
+  -                       spec.backend
+  -                       spec.rules.[].http.paths.[].backend.serviceName
+  -                       spec.rules.[].http.paths.[].backend.servicePort
+  +                       spec.rules.[].http.paths.[].backend.service
+  +                       spec.defaultBackend
+  +                       status.loadBalancer.ingress.[].ports
+
+comparing Ingress: 1.18.0@io.k8s.api.networking.v1beta1 vs. 1.24.2@io.k8s.api.networking.v1
+  +                       metadata.managedFields.[].subresource
+  -                       spec.backend
+  -                       spec.rules.[].http.paths.[].backend.serviceName
+  -                       spec.rules.[].http.paths.[].backend.servicePort
+  +                       spec.rules.[].http.paths.[].backend.service
+  +                       spec.defaultBackend
+  +                       status.loadBalancer.ingress.[].ports
+```
 
 ## Dev
 
