@@ -22,6 +22,7 @@ builds:
       -X github.com/mattfenwick/schema/pkg/swagger.version={{.Version}}
       -X github.com/mattfenwick/schema/pkg/swagger.gitSHA={{.Commit}}
       -X github.com/mattfenwick/schema/pkg/swagger.buildTime={{.Date}}
+      -extldflags "-static"
 archives:
   - id: kubectl-schema
     builds:
