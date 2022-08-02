@@ -55,7 +55,7 @@ func RunExplain(args *ExplainArgs) {
 	allowedPaths := slice.Map(func(p string) []string { return strings.Split(p, ".") }, args.Paths)
 	allowPath := func(path []string) bool {
 		if len(allowedPaths) == 0 {
-			return true
+			return allowDepth(0, len(path))
 		}
 		for _, prefix := range allowedPaths {
 			if IsPrefixOf(prefix, path) && allowDepth(len(prefix), len(path)) {
@@ -108,7 +108,7 @@ func TableResource(resolvedType *ResolvedType, allowPath func([]string) bool) st
 	table.SetRowLine(true)
 	table.SetAutoMergeCells(true)
 	table.SetColMinWidth(1, 100)
-	table.SetHeader([]string{"Kind", "Field"})
+	table.SetHeader([]string{"Path", "Type"})
 	for _, pair := range resolvedType.Paths([]string{}) {
 		path, vType := pair.Fst, pair.Snd
 		if allowPath(path) {
