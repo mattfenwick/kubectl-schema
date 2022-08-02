@@ -19,9 +19,9 @@ builds:
       - GO111MODULE=on
     main: cmd/schema/main.go
     ldflags: -s -w
-      -X github.com/mattfenwick/schema/pkg/swagger.version={{.Version}}
-      -X github.com/mattfenwick/schema/pkg/swagger.gitSHA={{.Commit}}
-      -X github.com/mattfenwick/schema/pkg/swagger.buildTime={{.Date}}
+      -X github.com/mattfenwick/kubectl-schema/pkg/swagger.version={{.Version}}
+      -X github.com/mattfenwick/kubectl-schema/pkg/swagger.gitSHA={{.Commit}}
+      -X github.com/mattfenwick/kubectl-schema/pkg/swagger.buildTime={{.Date}}
       -extldflags "-static"
 archives:
   - id: kubectl-schema
