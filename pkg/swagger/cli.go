@@ -63,5 +63,5 @@ func RunVersionCommand() {
 		"BuildTime": buildTime,
 	})
 	utils.DoOrDie(err)
-	fmt.Printf("KubeUtils version: \n%s\n", jsonString)
+	fmt.Printf("kubectl-schema version: \n%s\n", jsonString)
 }
