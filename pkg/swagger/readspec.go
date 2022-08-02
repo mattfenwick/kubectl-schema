@@ -8,36 +8,51 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"os"
+	"path"
 )
 
 const (
-	SpecsRootDirectory = "./swagger-data"
+	DataDirEnvVar = "KUBECTL_SCHEMA_DATA_DIRECTORY"
 )
 
+func getHomeDir() string {
+	home, err := os.UserHomeDir()
+	utils.DoOrDie(errors.Wrapf(err, "unable to get home dir"))
+	return home
+}
+
+func GetSpecsRootDirectory() string {
+	if dataDir, ok := os.LookupEnv(DataDirEnvVar); ok {
+		return dataDir
+	}
+	return path.Join(getHomeDir(), ".kubectl-schema")
+}
+
 func ReadSwaggerSpecFromGithub(version KubeVersion) (*KubeSpec, error) {
-	path := MakePathFromKubeVersion(version)
+	specPath := MakePathFromKubeVersion(version)
 
-	if !file.Exists(path) {
-		logrus.Infof("file for version %s not found (path %s); downloading instead", version, path)
+	if !file.Exists(specPath) {
+		logrus.Infof("file for version %s not found (path %s); downloading instead", version, specPath)
 
-		err := os.MkdirAll(SpecsRootDirectory, 0777)
+		dataDir := GetSpecsRootDirectory()
+		err := os.MkdirAll(dataDir, 0777)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unable to mkdir %s", SpecsRootDirectory)
+			return nil, errors.Wrapf(err, "unable to mkdir %s", dataDir)
 		}
 
-		err = utils.GetFileFromURL(version.SwaggerSpecURL(), path)
+		err = utils.GetFileFromURL(version.SwaggerSpecURL(), specPath)
 		if err != nil {
 			return nil, err
 		}
 
 		// get the keys sorted
-		err = json.SortFileOptions(path, false, true)
+		err = json.SortFileOptions(specPath, false, true)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	spec, err := json.ParseFile[KubeSpec](path)
+	spec, err := json.ParseFile[KubeSpec](specPath)
 	utils.DoOrDie(err)
 
 	return spec, nil
@@ -56,5 +71,5 @@ func MustDownloadSwaggerSpec(version KubeVersion) []byte {
 }
 
 func MakePathFromKubeVersion(version KubeVersion) string {
-	return fmt.Sprintf("%s/%s-swagger-spec.json", SpecsRootDirectory, version.ToString())
+	return fmt.Sprintf("%s/%s-swagger-spec.json", GetSpecsRootDirectory(), version.ToString())
 }

@@ -22,6 +22,14 @@ func SetupRootSchemaCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "schema",
 		Short: "schema inspection utilities",
+		Long: fmt.Sprintf(`This plugin provides schema inspection utilities, based on the OpenAPI kubernetes swagger specs.
+It should not be used with kubernetes spec versions prior to 1.14.0.
+
+This downloads specs to %s.
+
+The data directory can be changed using the %s environment variable; if this variable
+is not set, a directory underneath the home directory is created and used.
+`, GetSpecsRootDirectory(), DataDirEnvVar),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			return utils.SetUpLogger(flags.Verbosity)
 		},
