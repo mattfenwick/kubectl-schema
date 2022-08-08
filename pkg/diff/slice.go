@@ -1,25 +1,14 @@
 package diff
 
-import "github.com/mattfenwick/kubectl-schema/pkg/utils"
+import (
+	"github.com/mattfenwick/collections/pkg/set"
+)
 
 func SliceDiff(as []string, bs []string) *MapDiff {
-	aSet, bSet := utils.Set(as), utils.Set(bs)
-	var added, removed, same []string
-	for key := range aSet {
-		if bSet[key] {
-			same = append(same, key)
-		} else {
-			removed = append(removed, key)
-		}
-	}
-	for key := range bSet {
-		if !aSet[key] {
-			added = append(added, key)
-		}
-	}
+	aSet, bSet := set.FromSlice(as), set.FromSlice(bs)
 	return &MapDiff{
-		Added:   added,
-		Removed: removed,
-		Same:    same,
+		Added:   bSet.Difference(aSet).ToSlice(), // b - a: not in a, but is now in b
+		Removed: aSet.Difference(bSet).ToSlice(), // a - b: was in a, no longer in b
+		Same:    aSet.Intersect(bSet).ToSlice(),  // a & b: in both a and b
 	}
 }

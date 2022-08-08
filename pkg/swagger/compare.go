@@ -50,8 +50,7 @@ func RunCompareResource(args *CompareResourceArgs) {
 	spec2 := MustReadSwaggerSpecFromGithub(MustVersion(args.KubeVersions[1]))
 	kinds2 := spec2.ResolveStructure()
 
-	typeNames := set.NewSet(maps.Keys(kinds1))
-	typeNames.Union(set.NewSet(maps.Keys(kinds2)))
+	typeNames := set.FromSlice(maps.Keys(kinds1)).Union(set.FromSlice(maps.Keys(kinds2)))
 
 	for _, typeName := range slice.Sort(typeNames.ToSlice()) {
 		if allowResource(typeName) {

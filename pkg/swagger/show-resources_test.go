@@ -9,7 +9,7 @@ import (
 
 func RunShowResourcesTests() {
 	versions := []string{"1.18.20", "1.20.15", "1.22.12", "1.24.0", "1.25.0-alpha.3"}
-	resources := set.NewSet([]string{"Ingress", "CronJob", "CustomResourceDefinition"})
+	resources := set.FromSlice([]string{"Ingress", "CronJob", "CustomResourceDefinition"})
 	include := func(apiVersion string, resource string) bool {
 		return resources.Contains(resource)
 	}

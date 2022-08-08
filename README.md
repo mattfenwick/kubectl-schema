@@ -217,7 +217,7 @@ kubectl schema explain \
   --kube-version 1.24.0 \
   --resource Ingress \
   --format table \
-  --depth 1              
+  --depth 1
 
 1.24.0
 io.k8s.api.networking.v1 Ingress:

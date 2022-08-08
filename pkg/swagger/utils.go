@@ -49,7 +49,7 @@ func shouldAllow(s string, allows *set.Set[string]) bool {
 }
 
 func allower(values []string) func(string) bool {
-	valuesSet := set.NewSet(values)
+	valuesSet := set.FromSlice(values)
 	return func(val string) bool {
 		return shouldAllow(val, valuesSet)
 	}

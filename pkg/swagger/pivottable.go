@@ -17,7 +17,7 @@ type PivotTable struct {
 }
 
 func NewPivotTable(firstColumn string, restColumns []string) *PivotTable {
-	columnSet := set.NewSet(restColumns)
+	columnSet := set.FromSlice(restColumns)
 	if len(restColumns) != columnSet.Len() {
 		panic(errors.Errorf("expected unique columns, found duplicate in %+v", restColumns))
 	}
