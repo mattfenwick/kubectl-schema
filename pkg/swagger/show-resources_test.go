@@ -25,6 +25,8 @@ func RunShowResourcesTests() {
 		})
 		It("By resource -- diff", func() {
 			actual := ShowResources(ShowResourcesGroupByResource, versions, include, true)
+			fmt.Printf("expect:\n%s\n", byResourceWithDiff[1:])
+			fmt.Printf("actual:\n%s\n", actual)
 			Expect(actual).To(Equal(byResourceWithDiff[1:]))
 		})
 		It("By apiversion -- diff", func() {
@@ -78,8 +80,11 @@ var (
 +--------------------------+------------------------------+------------------------+--------------------------------+--------+-----------------+
 |         RESOURCE         |           1.18.20            |        1.20.15         |            1.22.12             | 1.24.0 | 1.25.0-ALPHA 3  |
 +--------------------------+------------------------------+------------------------+--------------------------------+--------+-----------------+
-| CronJob                  | batch.v1beta1                |                        | remove:                        |        | remove:         |
-|                          | batch.v2alpha1               |                        |   batch.v2alpha1               |        |   batch.v1beta1 |
+| CronJob                  | batch.v1beta1                |                        | add:                           |        | remove:         |
+|                          | batch.v2alpha1               |                        |   batch.v1                     |        |   batch.v1beta1 |
+|                          |                              |                        |                                |        |                 |
+|                          |                              |                        | remove:                        |        |                 |
+|                          |                              |                        |   batch.v2alpha1               |        |                 |
 |                          |                              |                        |                                |        |                 |
 |                          |                              |                        |                                |        |                 |
 +--------------------------+------------------------------+------------------------+--------------------------------+--------+-----------------+
