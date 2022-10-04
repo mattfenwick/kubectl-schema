@@ -131,7 +131,7 @@ func ShowResources(groupBy ShowResourcesGroupBy, versions []string, include func
 					add = fmt.Sprintf("add:\n  %s\n\n", strings.Join(slice.Sort(cellDiff.Added), "\n  "))
 				}
 				if len(cellDiff.Removed) > 0 {
-					add = fmt.Sprintf("remove:\n  %s\n\n", strings.Join(slice.Sort(cellDiff.Removed), "\n  "))
+					remove = fmt.Sprintf("remove:\n  %s\n\n", strings.Join(slice.Sort(cellDiff.Removed), "\n  "))
 				}
 				row = append(row, fmt.Sprintf("%s%s", add, remove))
 
