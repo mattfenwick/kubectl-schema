@@ -6,7 +6,6 @@ import (
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"golang.org/x/exp/maps"
 	"strings"
 )
@@ -15,26 +14,6 @@ type CompareResourceArgs struct {
 	KubeVersions []string
 	ApiVersions  []string
 	Resources    []string
-}
-
-func setupCompareResourceCommand() *cobra.Command {
-	args := &CompareResourceArgs{}
-
-	command := &cobra.Command{
-		Use:   "compare",
-		Short: "compare types across kube versions",
-		Args:  cobra.ExactArgs(0),
-		Run: func(cmd *cobra.Command, as []string) {
-			RunCompareResource(args)
-		},
-	}
-
-	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to use; if empty, uses all")
-
-	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", []string{"1.18.19", "1.23.0"}, "kubernetes versions")
-	command.Flags().StringSliceVar(&args.Resources, "resource", []string{"Pod"}, "resources to include; if empty, includes all")
-
-	return command
 }
 
 func RunCompareResource(args *CompareResourceArgs) {

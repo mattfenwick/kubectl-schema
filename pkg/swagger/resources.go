@@ -6,17 +6,7 @@ import (
 	"github.com/mattfenwick/kubectl-schema/pkg/diff"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"strings"
-)
-
-var (
-	defaultKubeVersions = []string{
-		"1.22.12",
-		"1.23.9",
-		"1.24.3",
-		"1.25.0-alpha.3",
-	}
 )
 
 type ShowResourcesArgs struct {
@@ -37,29 +27,6 @@ func (s *ShowResourcesArgs) GetGroupBy() ShowResourcesGroupBy {
 	default:
 		panic(errors.Errorf("invalid group by value: %s", s.GroupBy))
 	}
-}
-
-func SetupShowResourcesCommand() *cobra.Command {
-	args := &ShowResourcesArgs{}
-
-	command := &cobra.Command{
-		Use:   "resources",
-		Short: "show available resources, by api-version and kubernetes version",
-		Args:  cobra.ExactArgs(0),
-		Run: func(cmd *cobra.Command, as []string) {
-			RunShowResources(args)
-		},
-	}
-
-	command.Flags().BoolVar(&args.Diff, "diff", false, "if true, calculate a diff from kube version to kube version.  if true, simply print resources")
-
-	command.Flags().StringVar(&args.GroupBy, "group-by", "resource", "what to group by: valid values are 'resource' and 'api-version'")
-	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", defaultKubeVersions, "kube versions to explain")
-
-	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "resources to include; if empty, include all")
-	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to include; if empty, include all")
-
-	return command
 }
 
 func RunShowResources(args *ShowResourcesArgs) {

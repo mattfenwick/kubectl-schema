@@ -9,6 +9,16 @@ import (
 	"strings"
 )
 
+var (
+	defaultKubeVersions = []string{
+		"1.22.16",
+		"1.23.14",
+		"1.24.8",
+		"1.25.4",
+		"1.26.0-rc.0",
+	}
+)
+
 type KubeVersion []string
 
 var (
@@ -68,10 +78,11 @@ var (
 		"1.19.16",
 		"1.20.15",
 		"1.21.14",
-		"1.22.12",
-		"1.23.9",
-		"1.24.3",
-		"1.25.0-alpha.3",
+		"1.22.16",
+		"1.23.14",
+		"1.24.8",
+		"1.25.4",
+		"1.26.0-rc.0",
 	}
 
 	LatestKubePatchVersions = slice.Map(MustVersion, LatestKubePatchVersionStrings)

@@ -39,7 +39,7 @@ is not set, a directory underneath the home directory is created and used.
 
 	command.AddCommand(SetupVersionCommand())
 	command.AddCommand(SetupExplainCommand())
-	command.AddCommand(setupCompareResourceCommand())
+	command.AddCommand(SetupCompareResourceCommand())
 	command.AddCommand(SetupShowResourcesCommand())
 
 	return command
@@ -72,4 +72,69 @@ func RunVersionCommand() {
 	})
 	utils.DoOrDie(err)
 	fmt.Printf("kubectl-schema version: \n%s\n", jsonString)
+}
+
+func SetupExplainCommand() *cobra.Command {
+	args := &ExplainArgs{}
+
+	command := &cobra.Command{
+		Use:   "explain",
+		Short: "explain resources from a swagger spec",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, as []string) {
+			RunExplain(args)
+		},
+	}
+
+	command.Flags().StringVar(&args.Format, "format", "condensed", "output format; possible values: table, condensed")
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to look for resource under; looks under all if not specified")
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "kubernetes resources to explain")
+	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", []string{"1.23.0"}, "kubernetes spec versions")
+	command.Flags().IntVar(&args.Depth, "depth", 0, "number of layers to print; 0 is treated as unlimited")
+	command.Flags().StringSliceVar(&args.Paths, "path", []string{}, "paths to search under, components separated by '.'; if empty, all paths are searched")
+
+	return command
+}
+
+func SetupCompareResourceCommand() *cobra.Command {
+	args := &CompareResourceArgs{}
+
+	command := &cobra.Command{
+		Use:   "compare",
+		Short: "compare types across kube versions",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, as []string) {
+			RunCompareResource(args)
+		},
+	}
+
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to use; if empty, uses all")
+
+	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", []string{defaultKubeVersions[0], defaultKubeVersions[len(defaultKubeVersions)-1]}, "two kubernetes versions to compare (must be exactly 2)")
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{"Pod"}, "resources to include; if empty, includes all")
+
+	return command
+}
+
+func SetupShowResourcesCommand() *cobra.Command {
+	args := &ShowResourcesArgs{}
+
+	command := &cobra.Command{
+		Use:   "resources",
+		Short: "show available resources, by api-version and kubernetes version",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, as []string) {
+			RunShowResources(args)
+		},
+	}
+
+	command.Flags().BoolVar(&args.Diff, "diff", false, "if true, calculate a diff from kube version to kube version.  if true, simply print resources")
+
+	command.Flags().StringVar(&args.GroupBy, "group-by", "resource", "what to group by: valid values are 'resource' and 'api-version'")
+	command.Flags().StringSliceVar(&args.KubeVersions, "kube-version", defaultKubeVersions, "kube versions to explain")
+
+	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "resources to include; if empty, include all")
+	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to include; if empty, include all")
+
+	return command
 }
