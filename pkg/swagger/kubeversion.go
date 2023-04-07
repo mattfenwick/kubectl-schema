@@ -2,11 +2,12 @@ package swagger
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/mattfenwick/collections/pkg/base"
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 type KubeVersion []string
@@ -69,10 +70,11 @@ var (
 		"1.20.15",
 		"1.21.14",
 		"1.22.17",
-		"1.23.15",
-		"1.24.9",
-		"1.25.5",
-		"1.26.0",
+		"1.23.17",
+		"1.24.12",
+		"1.25.8",
+		"1.26.3",
+		"1.27.0-rc.1",
 	}
 
 	LatestKubePatchVersions = slice.Map(MustVersion, LatestKubePatchVersionStrings)
