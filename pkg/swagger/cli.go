@@ -2,6 +2,7 @@ package swagger
 
 import (
 	"fmt"
+
 	"github.com/mattfenwick/collections/pkg/json"
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/pkg/errors"
@@ -41,6 +42,7 @@ is not set, a directory underneath the home directory is created and used.
 	command.AddCommand(SetupExplainCommand())
 	command.AddCommand(SetupCompareResourceCommand())
 	command.AddCommand(SetupShowResourcesCommand())
+	command.AddCommand(SetupConfigCommand())
 
 	return command
 }
@@ -136,5 +138,18 @@ func SetupShowResourcesCommand() *cobra.Command {
 	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "resources to include; if empty, include all")
 	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to include; if empty, include all")
 
+	return command
+}
+
+func SetupConfigCommand() *cobra.Command {
+	command := &cobra.Command{
+		Use:   "config",
+		Short: "show compiled-in configuration",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, as []string) {
+			fmt.Printf("default kube versions:\n%s\n", json.MustMarshalToString(defaultKubeVersions))
+			fmt.Printf("kube patch versions:\n%s\n", json.MustMarshalToString(LatestKubePatchVersionStrings))
+		},
+	}
 	return command
 }
