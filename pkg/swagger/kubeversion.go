@@ -71,10 +71,11 @@ var (
 		"1.21.14",
 		"1.22.17",
 		"1.23.17",
-		"1.24.12",
-		"1.25.8",
-		"1.26.3",
-		"1.27.0-rc.1",
+		"1.24.17",
+		"1.25.13",
+		"1.26.8",
+		"1.27.5",
+		"1.28.1",
 	}
 
 	LatestKubePatchVersions = slice.Map(MustVersion, LatestKubePatchVersionStrings)
