@@ -2,7 +2,7 @@ package debug
 
 import (
 	"fmt"
-	"github.com/mattfenwick/collections/pkg/builtin"
+	"github.com/mattfenwick/collections/pkg/base"
 	"github.com/mattfenwick/collections/pkg/function"
 	"github.com/mattfenwick/collections/pkg/set"
 	"github.com/mattfenwick/collections/pkg/slice"
@@ -23,7 +23,7 @@ func (j *JsonPaths) Append(path []string) {
 }
 
 func (j *JsonPaths) GetSortedPaths() [][]string {
-	return slice.SortBy(slice.CompareSlicePairwiseBy(builtin.CompareOrdered[string]), j.Paths)
+	return slice.SortBy(slice.CompareSlicePairwiseBy(base.CompareOrdered[string]), j.Paths)
 }
 
 type Trie struct {
