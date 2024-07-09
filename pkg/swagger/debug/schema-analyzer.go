@@ -23,7 +23,7 @@ func (j *JsonPaths) Append(path []string) {
 }
 
 func (j *JsonPaths) GetSortedPaths() [][]string {
-	return slice.SortBy(slice.CompareSlicePairwiseBy(base.CompareOrdered[string]), j.Paths)
+	return slice.SortBy(slice.ComparePairwiseBy(base.CompareOrdered[string]), j.Paths)
 }
 
 type Trie struct {

@@ -1,9 +1,9 @@
 module github.com/mattfenwick/kubectl-schema
 
-go 1.21
+go 1.22
 
 require (
-	github.com/mattfenwick/collections v0.2.8
+	github.com/mattfenwick/collections v0.3.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.12.0
 	github.com/onsi/gomega v1.27.10

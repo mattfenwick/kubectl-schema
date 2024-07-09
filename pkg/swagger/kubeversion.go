@@ -13,7 +13,7 @@ import (
 type KubeVersion []string
 
 var (
-	CompareKubeVersion = slice.CompareSlicePairwise[string]()
+	CompareKubeVersion = slice.ComparePairwise[string]()
 )
 
 func NewVersion(v string) (KubeVersion, error) {
