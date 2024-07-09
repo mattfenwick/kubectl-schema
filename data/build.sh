@@ -5,7 +5,7 @@ set -euo pipefail
 
 
 out_file=./resources-by-api-version-diff.md
-KUBE_VERSIONS="1.20.15,1.21.14,1.22.17,1.23.17,1.24.12,1.25.8,1.26.3,1.27.0-rc.1"
+KUBE_VERSIONS="1.24.17,1.25.16,1.26.15,1.27.15,1.28.11,1.29.6,1.30.2,1.31.0-alpha.3"
 
 echo '```' > $out_file
 go run ../cmd/schema/main.go resources \
