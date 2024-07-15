@@ -18,8 +18,8 @@ github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLe
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/mattfenwick/collections v0.3.1 h1:5YpGQfc3GCV3MBGn/vO3o3l3L+fi+j9Vi5avuHAvYAw=
-github.com/mattfenwick/collections v0.3.1/go.mod h1:pV288dp1Y4M0gRj/MLIz252pE7qxdpWlgXicgnAThxo=
+github.com/mattfenwick/collections v0.3.2 h1:sdEBe7/cL+dK7CZ0SXod07qzCpoGJu2xtOywAF155Us=
+github.com/mattfenwick/collections v0.3.2/go.mod h1:S2z3MxcMsoBiP8Zw4ewmFvQcfq7QfesA7V192udZ0W8=
 github.com/mattn/go-runewidth v0.0.9 h1:Lm995f3rfxdpd6TSmuVCHVb/QhupuXlYr8sCI/QdE+0=
 github.com/mattn/go-runewidth v0.0.9/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
