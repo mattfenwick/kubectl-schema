@@ -16,21 +16,21 @@ func RunShowResourcesTests() {
 
 	Describe("Show resource", func() {
 		It("By resource -- no diff", func() {
-			actual := ShowResources(ShowResourcesGroupByResource, versions, include, false)
+			actual := ShowResources(ShowResourcesGroupByResource, versions, include, false, ShowResourcesFormatTable)
 			Expect(actual).To(Equal(byResourceNoDiff[1:]))
 		})
 		It("By apiversion -- no diff", func() {
-			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, false)
+			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, false, ShowResourcesFormatTable)
 			Expect(actual).To(Equal(byApiVersionNoDiff[1:]))
 		})
 		It("By resource -- diff", func() {
-			actual := ShowResources(ShowResourcesGroupByResource, versions, include, true)
+			actual := ShowResources(ShowResourcesGroupByResource, versions, include, true, ShowResourcesFormatTable)
 			fmt.Printf("expect:\n%s\n", byResourceWithDiff[1:])
 			fmt.Printf("actual:\n%s\n", actual)
 			Expect(actual).To(Equal(byResourceWithDiff[1:]))
 		})
 		It("By apiversion -- diff", func() {
-			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, true)
+			actual := ShowResources(ShowResourcesGroupByApiVersion, versions, include, true, ShowResourcesFormatTable)
 			fmt.Printf("actual vs. expected:\n%s\n\n%s\n\n", actual, byApiVersionWithDiff)
 			Expect(actual).To(Equal(byApiVersionWithDiff[1:]))
 		})

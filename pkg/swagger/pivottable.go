@@ -1,12 +1,13 @@
 package swagger
 
 import (
+	"strings"
+
 	"github.com/mattfenwick/collections/pkg/set"
 	"github.com/mattfenwick/collections/pkg/slice"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/maps"
-	"strings"
 )
 
 type PivotTable struct {
@@ -39,18 +40,53 @@ func (e *PivotTable) Add(rowKey string, columnKey string, value string) {
 	e.Rows[rowKey][columnKey] = append(e.Rows[rowKey][columnKey], value)
 }
 
-func (e *PivotTable) FormattedTable(formatRow func(rowKey string, values [][]string) []string) string {
+func (e *PivotTable) ToRawTable(formatRow func(rowKey string, values [][]string) []string) *RawTable {
+	headers := append([]string{e.FirstColumnHeader}, e.Columns...)
+	var rows [][]string
+
+	for _, rowKey := range slice.Sort(maps.Keys(e.Rows)) {
+		values := slice.Map(func(c string) []string { return e.Rows[rowKey][c] }, e.Columns)
+		rows = append(rows, formatRow(rowKey, values))
+	}
+
+	return NewRawTable(headers, rows)
+}
+
+type RawTable struct {
+	Headers []string
+	Rows    [][]string
+}
+
+func NewRawTable(headers []string, rows [][]string) *RawTable {
+	for i, r := range rows {
+		if len(headers) != len(r) {
+			panic(errors.Errorf("mismatch between length of headers and of row %d: %d vs. %d", i, len(headers), len(r)))
+		}
+	}
+	return &RawTable{Headers: headers, Rows: rows}
+}
+
+func (r *RawTable) ToMarkdownTable() string {
+	rows := [][]string{
+		r.Headers,
+		slice.Map(func(h string) string { return "---" }, r.Headers),
+	}
+	rows = append(rows, r.Rows...)
+	lines := slice.Map(func(row []string) string {
+		return "| " + strings.Join(row, " | ") + " |"
+	}, rows)
+	return strings.Join(lines, "\n")
+}
+
+func (r *RawTable) ToFormattedTable() string {
 	tableString := &strings.Builder{}
 	table := tablewriter.NewWriter(tableString)
 	table.SetAutoWrapText(false)
 	table.SetRowLine(true)
 	table.SetAutoMergeCells(true)
 
-	table.SetHeader(append([]string{e.FirstColumnHeader}, e.Columns...))
-	for _, rowKey := range slice.Sort(maps.Keys(e.Rows)) {
-		values := slice.Map(func(c string) []string { return e.Rows[rowKey][c] }, e.Columns)
-		table.Append(formatRow(rowKey, values))
-	}
+	table.SetHeader(r.Headers)
+	table.AppendBulk(r.Rows)
 
 	table.Render()
 	return tableString.String()

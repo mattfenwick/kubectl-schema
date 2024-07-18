@@ -4,7 +4,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func DoOrDie(err error) {
+func Die(err error) {
 	if err != nil {
 		logrus.Fatalf("%+v", err)
 	}

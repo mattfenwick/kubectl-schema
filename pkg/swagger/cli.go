@@ -11,7 +11,7 @@ import (
 
 func RunRootSchemaCommand() {
 	command := SetupRootSchemaCommand()
-	utils.DoOrDie(errors.Wrapf(command.Execute(), "run root schema command"))
+	utils.Die(errors.Wrapf(command.Execute(), "run root schema command"))
 }
 
 type RootSchemaFlags struct {
@@ -72,7 +72,7 @@ func RunVersionCommand() {
 		"GitSHA":    gitSHA,
 		"BuildTime": buildTime,
 	})
-	utils.DoOrDie(err)
+	utils.Die(err)
 	fmt.Printf("kubectl-schema version: \n%s\n", jsonString)
 }
 
@@ -137,6 +137,8 @@ func SetupShowResourcesCommand() *cobra.Command {
 
 	command.Flags().StringSliceVar(&args.Resources, "resource", []string{}, "resources to include; if empty, include all")
 	command.Flags().StringSliceVar(&args.ApiVersions, "api-version", []string{}, "api versions to include; if empty, include all")
+
+	command.Flags().StringVar(&args.Format, "format", "table", "format to use for output: valid values are 'table' and 'markdown'")
 
 	return command
 }

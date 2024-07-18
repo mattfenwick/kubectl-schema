@@ -45,7 +45,7 @@ func RunExplain(args *ExplainArgs) {
 	//table := NewPivotTable("?", args.KubeVersions)
 
 	for _, kubeVersion := range args.KubeVersions {
-		fmt.Printf("%s\n", kubeVersion)
+		fmt.Printf("for kube version %s\n", kubeVersion)
 		spec := MustReadSwaggerSpecFromGithub(MustVersion(kubeVersion))
 		typesByKindByApiVersion := spec.ResolveStructure()
 
