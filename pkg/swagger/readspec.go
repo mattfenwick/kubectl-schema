@@ -2,13 +2,14 @@ package swagger
 
 import (
 	"fmt"
+	"os"
+	"path"
+
 	"github.com/mattfenwick/collections/pkg/file"
 	"github.com/mattfenwick/collections/pkg/json"
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 func getHomeDir() string {
 	home, err := os.UserHomeDir()
-	utils.DoOrDie(errors.Wrapf(err, "unable to get home dir"))
+	utils.Die(errors.Wrapf(err, "unable to get home dir"))
 	return home
 }
 
@@ -53,20 +54,20 @@ func ReadSwaggerSpecFromGithub(version KubeVersion) (*KubeSpec, error) {
 	}
 
 	spec, err := json.ParseFile[KubeSpec](specPath)
-	utils.DoOrDie(err)
+	utils.Die(err)
 
 	return spec, nil
 }
 
 func MustReadSwaggerSpecFromGithub(version KubeVersion) *KubeSpec {
 	spec, err := ReadSwaggerSpecFromGithub(version)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	return spec
 }
 
 func MustDownloadSwaggerSpec(version KubeVersion) []byte {
 	bytes, err := utils.GetURL(version.SwaggerSpecURL())
-	utils.DoOrDie(err)
+	utils.Die(err)
 	return bytes
 }
 

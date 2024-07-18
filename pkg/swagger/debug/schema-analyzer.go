@@ -2,6 +2,7 @@ package debug
 
 import (
 	"fmt"
+
 	"github.com/mattfenwick/collections/pkg/base"
 	"github.com/mattfenwick/collections/pkg/function"
 	"github.com/mattfenwick/collections/pkg/set"
@@ -75,7 +76,7 @@ func BounceMarshalGeneric[A any](in interface{}) (*A, error) {
 func JsonFindPaths(obj interface{}, starterPaths []string) ([][]string, [][]string) {
 	paths := &JsonPaths{}
 	bouncedObj, err := BounceMarshalGeneric[map[string]interface{}](obj)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	JsonFindPathsHelper(*bouncedObj, []string{}, paths)
 
 	trie := NewTrie()

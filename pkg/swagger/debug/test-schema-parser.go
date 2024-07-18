@@ -2,14 +2,15 @@ package debug
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"reflect"
+
 	"github.com/mattfenwick/collections/pkg/file"
 	"github.com/mattfenwick/collections/pkg/json"
 	"github.com/mattfenwick/kubectl-schema/pkg/swagger"
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
-	"reflect"
 )
 
 func setupTestSchemaParserCommand() *cobra.Command {
@@ -36,29 +37,29 @@ func CheckSchema(dir string, version swagger.KubeVersion) {
 	specBytes := swagger.MustDownloadSwaggerSpec(version)
 	// remove paths
 	specMap, err := json.Parse[map[string]interface{}](specBytes)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	delete(*specMap, "paths")
 	specMapBytes, err := json.MarshalWithOptions(specMap, json.DefaultMarshalOptions)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	// carry on
 	spec, err := json.Parse[swagger.KubeSpec](specMapBytes)
-	utils.DoOrDie(err)
+	utils.Die(err)
 
 	specString, err := json.MarshalToString(spec)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	spec2, err := json.Parse[swagger.KubeSpec]([]byte(specString))
-	utils.DoOrDie(err)
+	utils.Die(err)
 
-	utils.DoOrDie(os.MkdirAll(dir, 0777))
+	utils.Die(os.MkdirAll(dir, 0777))
 	path1, path2 := path.Join(dir, "spec1.txt"), path.Join(dir, "spec2.txt")
 
 	sortedSpecBytes, err := json.SortOptions(specMapBytes, false, true)
-	utils.DoOrDie(err)
-	utils.DoOrDie(file.Write(path1, sortedSpecBytes, 0644))
+	utils.Die(err)
+	utils.Die(file.Write(path1, sortedSpecBytes, 0644))
 
 	sortedSpecStringBytes, err := json.SortOptions([]byte(specString), false, true)
-	utils.DoOrDie(err)
-	utils.DoOrDie(file.Write(path2, sortedSpecStringBytes, 0644))
+	utils.Die(err)
+	utils.Die(file.Write(path2, sortedSpecStringBytes, 0644))
 
 	//diff, err := utils.CommandRun(exec.Command("git", "diff", "--no-index", "my-spec-1.txt", "my-spec-2.txt"))
 	//utils.DoOrDie(err)

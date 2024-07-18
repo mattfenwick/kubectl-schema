@@ -2,6 +2,8 @@ package debug
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/mattfenwick/collections/pkg/file"
 	"github.com/mattfenwick/collections/pkg/json"
 	"github.com/mattfenwick/collections/pkg/slice"
@@ -9,7 +11,6 @@ import (
 	"github.com/mattfenwick/kubectl-schema/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func SetupSwaggerDebugCommand() *cobra.Command {
@@ -58,7 +59,7 @@ func RunParse(args *ParseArgs) {
 
 	// must do weird marshal/unmarshal/marshal dance to get struct keys sorted
 	bytes, err := json.MarshalWithOptions(spec, &json.MarshalOptions{EscapeHTML: true, Indent: true, Sort: true})
-	utils.DoOrDie(err)
+	utils.Die(err)
 
 	fmt.Printf("%s\n", bytes)
 }
@@ -94,7 +95,7 @@ func RunAnalyzeSchema(args *AnalyzeSchemaArgs) {
 
 	path := swagger.MakePathFromKubeVersion(swagger.MustVersion(args.Version))
 	specObj, err := json.ParseFile[map[string]interface{}](path)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	//spec := MustReadSwaggerSpecFromGithub(args.Version) // TODO
 
 	//starterPaths := []string{"paths", "definitions"}
@@ -115,7 +116,7 @@ func RunAnalyzeSchemaLatest() {
 		path := fmt.Sprintf("test-schema/%s.txt", version)
 		specBytes := swagger.MustDownloadSwaggerSpec(version)
 		specObj, err := json.Parse[map[string]interface{}](specBytes)
-		utils.DoOrDie(err)
+		utils.Die(err)
 		//spec := MustReadSwaggerSpecFromGithub(args.Version) // TODO
 
 		//starterPathsToInspect := []string{"paths", "definitions"}
@@ -128,7 +129,7 @@ func RunAnalyzeSchemaLatest() {
 		}
 		lines := slice.Map(func(xs []string) string { return strings.Join(xs, " ") }, dedupedPaths)
 		err = file.Write(path, []byte(strings.Join(lines, "\n")), 0644)
-		utils.DoOrDie(err)
+		utils.Die(err)
 		//for _, p := range dedupedPaths {
 		//	fmt.Printf("%s\n", strings.Join(p, " "))
 		//}

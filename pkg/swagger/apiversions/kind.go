@@ -2,12 +2,13 @@ package apiversions
 
 import (
 	"fmt"
-	"github.com/mattfenwick/kubectl-schema/pkg/utils"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"regexp"
 	"strings"
+
+	"github.com/mattfenwick/kubectl-schema/pkg/utils"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 func ParseKindResults() {
@@ -30,9 +31,9 @@ func ParseKindResults() {
 		//   instead of reading from static file
 
 		headers, rows, err := ReadCSV(fmt.Sprintf("../kube/data/v%s-api-resources.txt", version))
-		utils.DoOrDie(err)
+		utils.Die(err)
 		rsTable, err := NewResourcesTable(version, headers, rows)
-		utils.DoOrDie(err)
+		utils.Die(err)
 
 		fmt.Printf("%s\n", rsTable.KindResourcesTable())
 

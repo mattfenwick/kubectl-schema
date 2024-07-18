@@ -26,7 +26,7 @@ func NewVersion(v string) (KubeVersion, error) {
 
 func MustVersion(v string) KubeVersion {
 	version, err := NewVersion(v)
-	utils.DoOrDie(err)
+	utils.Die(err)
 	return version
 }
 
